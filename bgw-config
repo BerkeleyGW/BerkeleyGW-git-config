@@ -1,0 +1,32 @@
+# BerkeleyGW git configuration
+# Version 0.0 - 2018/07/11
+
+# This file can be automatically downloaded and installed with the commands:
+# (cd $(git rev-parse --show-toplevel) && curl -L -o .git/bgw-config https://raw.githubusercontent.com/BerkeleyGW/BerkeleyGW-git-config/master/bgw-config && git config include.path bgw-config)
+
+[core]
+	pager = less -R
+[remote "upstream"]
+	url = git@github.com:jornada/BerkeleyGW.git
+	fetch = +refs/heads/*:refs/remotes/upstream/*
+[branch "master"]
+	remote = origin
+[push]
+	default = simple
+[remote]
+	pushDefault = origin
+[alias]
+	pristine = !git update-index -q --refresh && git diff-index --quiet HEAD --
+	update = !git pristine && ( git fetch upstream && git checkout master && ( git branch -f pre-update && git rebase upstream/master && git push -f origin master || echo 'Something went wrong with the sync.\\n You can reset the master branch to the last position with git reset --hard pre-update' ) || echo 'Could not fetch upstream or checkout master.\\nThis is weird!' ) || ( echo 'Working tree is not clean!\\nPlease, commit or stage your work.' )
+	lg1 = log --graph --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(bold white)— %an%C(reset)%C(bold yellow)%d%C(reset)' --abbrev-commit --date=relative
+	lg2 = log --graph --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(bold white)— %an%C(reset)' --abbrev-commit
+	lg = !git lg1
+	rev2hash = !sh -c 'git rev-list --first-parent --reverse master | awk NR==$0'
+	get-rev = get-abs-rev
+	get-abs-rev = rev-list --first-parent --count HEAD
+	get-rel-rev = !sh -c 'git rev-list --first-parent --count $(git rev-list --tags --max-count=1)..HEAD'
+	vimdiff = !git difftool --tool=vimdiff --no-prompt \"$@\"
+[color]
+	status = auto
+	branch = auto
+	diff = auto

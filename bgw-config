@@ -1,8 +1,10 @@
 # BerkeleyGW git configuration
 # Version 0.0 - 2018/07/11
-
-# This file can be automatically downloaded and installed with the commands:
-# (cd $(git rev-parse --show-toplevel) && curl -L -o .git/bgw-config https://raw.githubusercontent.com/BerkeleyGW/BerkeleyGW-git-config/master/bgw-config && git config include.path bgw-config)
+#
+# Felipe H. da Jornada (2018)
+#
+# This file can be automatically downloaded with the "git update-config"
+# command or with the provided "update-config.sh" script.
 
 [core]
 	pager = less -R

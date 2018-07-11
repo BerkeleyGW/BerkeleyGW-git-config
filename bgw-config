@@ -9,7 +9,7 @@
 [core]
 	pager = less -R
 [remote "upstream"]
-	url = git@github.com:jornada/BerkeleyGW.git
+	url = git@github.com:BerkeleyGW/BerkeleyGW.git
 	fetch = +refs/heads/*:refs/remotes/upstream/*
 [branch "master"]
 	remote = origin

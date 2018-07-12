@@ -3,23 +3,95 @@
 #
 # Felipe H. da Jornada (2018)
 #
-# This file can be automatically downloaded with the "git update-config"
-# command or with the provided "update-config.sh" script.
+# This file can be automatically updated with the "git update-config" command,
+# which in turn can be installed with the followning command:
+# curl -sL https://raw.githubusercontent.com/BerkeleyGW/git-config/master/setup.sh | bash
 
 [core]
 	pager = less -R
+
 [remote "upstream"]
 	url = git@github.com:BerkeleyGW/BerkeleyGW.git
 	fetch = +refs/heads/*:refs/remotes/upstream/*
+
 [branch "master"]
 	remote = origin
+	rebase = true
+
 [push]
 	default = simple
+
+#[pull]
+#	rebase = true
+
 [remote]
 	pushDefault = origin
+
 [alias]
-	pristine = !git update-index -q --refresh && git diff-index --quiet HEAD --
-	update = !git pristine && ( git fetch upstream && git checkout master && ( git branch -f pre-update && git rebase upstream/master && git push -f origin master || echo 'Something went wrong with the sync.\\n You can reset the master branch to the last position with git reset --hard pre-update' ) || echo 'Could not fetch upstream or checkout master.\\nThis is weird!' ) || ( echo 'Working tree is not clean!\\nPlease, commit or stage your work.' )
+	# Core aliases
+	#
+	# Make sure there are no uncommitted and unstaged files.
+	# https://stackoverflow.com/questions/2657935/checking-for-a-dirty-index-or-untracked-files-with-git
+	is-pristine = !\
+		git update-index -q --refresh &&\
+		git diff-index --quiet --cached HEAD -- &&\
+		git diff-files --quiet
+	# Warn about untracked files.
+	# https://stackoverflow.com/questions/2657935/checking-for-a-dirty-index-or-untracked-files-with-git
+	warn-untracked = !\
+		git ls-files --others --exclude-standard --error-unmatch $(git rev-parse --show-toplevel) >/dev/null 2>&1 &&\
+		echo 'WARNING: there are untracked files in your repository' || true
+	# Make sure there is no WIP and that we are on the master branch
+	can-rebase = "!\
+		{ [ x$(git symbolic-ref --short -q HEAD) = xmaster ] || {\
+			echo 'ERROR: can only perform this operation on the master branch.' &&\
+			echo 'If you dont have uncommited modifications, do a \"git checkout master\".' &&\
+			false; }; } &&\
+		{ git is-pristine && git warn-untracked || {\
+			echo 'ERROR: index is not clean.' &&\
+			echo 'Please commit your modifications:' &&\
+			echo '  git status' &&\
+			echo '  git add <files you changed/added/removed>' &&\
+			echo '  git commit -m <brief message>' &&\
+			false; }; }"
+	# Rebase master to x/master, where "x" is a generic remote.
+	# Accepts an optional parameter second argument that gets
+	# passed to git rebase (eg: "-i" for interactive rebase)
+	safe-rebase-x = "!f() { git can-rebase || return 1; \
+		git fetch $1 && git branch -f before-rebase-$1 && git rebase $2 $1/master &&\
+		echo \"Success: fetched $1/master and rebased master to $1/master.\" || {\
+		echo \"ERROR: rebase operation of $1/master probably failed.\" &&\
+		echo \"Please (1) fix any conflicts, (2) type 'git rebase --continue',\" &&\
+		echo \"and iterate these two steps as necessary.\" &&\
+		echo \"You may also cancel this operation with 'git rebase --abort'.\" &&\
+		echo \"Your previous master branch is also saved in the temporary branch 'before-rebase-$1'.\" &&\
+		echo \"You may also pass the '-i' argument to 'git sync' to perform an \" &&\
+		echo \"interactive rebase, and squash all but the first commit.\" &&\
+		false; }; }; f"
+	#
+	# TODO: add another alias, safe-rebase-squashed-x, which will first squash the
+	# changes introduced in master. Idea:
+	# mergepoint=$(git merge-base $1/master master);
+	# git reset --soft $mergepoint &&\
+	# git commit --edit -m"$(git log --format=%B --reverse master..$mergepoint)"
+	# https://stackoverflow.com/a/5201642
+	# Also: option for rebase -i?
+	#
+	# Rebase origin onto master
+	safe-rebase-origin = !git safe-rebase-x origin
+	# Rebase upstream onto master
+	safe-rebase-upstream = !git safe-rebase-x upstream
+	# Rebase origin onto master, then upstream
+	safe-rebase-all = !git safe-rebase-origin && git safe-rebase-upstream
+	# Push master branch onto origin, allowing for a history rewrite
+	force-push = !git push -f origin master
+	# This is roughly equivalent to the "svn update" command
+	sync = !git safe-rebase-all && git force-push
+	# Roughly equivalent to deleting and creating a fresh fork
+	reinit = !git reset --hard && git checkout master && git reset --hard upstream/master && git force-push
+
+	# Auxiliary aliases
+	#
 	lg1 = log --graph --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(bold white)— %an%C(reset)%C(bold yellow)%d%C(reset)' --abbrev-commit --date=relative
 	lg2 = log --graph --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(bold white)— %an%C(reset)' --abbrev-commit
 	lg = !git lg1
@@ -28,6 +100,7 @@
 	get-abs-rev = rev-list --first-parent --count HEAD
 	get-rel-rev = !sh -c 'git rev-list --first-parent --count $(git rev-list --tags --max-count=1)..HEAD'
 	vimdiff = !git difftool --tool=vimdiff --no-prompt \"$@\"
+
 [color]
 	status = auto
 	branch = auto

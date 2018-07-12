@@ -55,16 +55,20 @@
 			echo '  git commit -m <brief message>' &&\
 			false; }; }"
 	# Rebase master to x/master, where "x" is a generic remote.
-	# Accepts an optional parameter second argument that gets
+	# Accepts an optional second parameter that gets
 	# passed to git rebase (eg: "-i" for interactive rebase)
 	safe-rebase-x = "!f() { git can-rebase || return 1; \
-		git fetch $1 && git branch -f before-rebase-$1 && git rebase $2 $1/master &&\
+	        [ x$2 = x ] || [ x$2 = x-i ] || { \
+			echo 'ERROR: unknown optional argument:' $2; \
+			return 1; \
+		}; \
+		git fetch $1 && git branch -f before-rebase && git rebase $2 $1/master &&\
 		echo \"Success: fetched $1/master and rebased master to $1/master.\" || {\
 		echo \"ERROR: rebase operation of $1/master probably failed.\" &&\
 		echo \"Please (1) fix any conflicts, (2) type 'git rebase --continue',\" &&\
 		echo \"and iterate these two steps as necessary.\" &&\
 		echo \"You may also cancel this operation with 'git rebase --abort'.\" &&\
-		echo \"Your previous master branch is also saved in the temporary branch 'before-rebase-$1'.\" &&\
+		echo \"Your previous master branch is also saved in the temporary branch 'before-rebase'.\" &&\
 		echo \"You may also pass the '-i' argument to 'git sync' to perform an \" &&\
 		echo \"interactive rebase, and squash all but the first commit.\" &&\
 		false; }; }; f"
@@ -77,16 +81,22 @@
 	# https://stackoverflow.com/a/5201642
 	# Also: option for rebase -i?
 	#
-	# Rebase origin onto master
-	safe-rebase-origin = !git safe-rebase-x origin
+	# Rebase origin onto master.
+	# Accepts an optional parameter that gets
+	# passed to git rebase (eg: "-i" for interactive rebase)
+	safe-rebase-origin = "!f() { git safe-rebase-x origin $1; }; f"
 	# Rebase upstream onto master
-	safe-rebase-upstream = !git safe-rebase-x upstream
+	# Accepts an optional parameter that gets
+	# passed to git rebase (eg: "-i" for interactive rebase)
+	safe-rebase-upstream = "!f() { git safe-rebase-x upstream $1; }; f"
 	# Rebase origin onto master, then upstream
-	safe-rebase-all = !git safe-rebase-origin && git safe-rebase-upstream
+	# Accepts an optional parameter that gets
+	# passed to git rebase (eg: "-i" for interactive rebase)
+	safe-rebase-all = "!f() { git safe-rebase-origin $1 && git safe-rebase-upstream $1; }; f"
 	# Push master branch onto origin, allowing for a history rewrite
 	force-push = !git push -f origin master
 	# This is roughly equivalent to the "svn update" command
-	sync = !git safe-rebase-all && git force-push
+	sync = "!f() { git safe-rebase-all $1 && git force-push; }; f"
 	# Roughly equivalent to deleting and creating a fresh fork
 	reinit = !git reset --hard && git checkout master && git reset --hard upstream/master && git force-push
 

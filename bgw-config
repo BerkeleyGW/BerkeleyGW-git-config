@@ -5,14 +5,10 @@
 #
 # This file can be automatically updated with the "git update-config" command,
 # which in turn can be installed with the followning command:
-# curl -sL https://raw.githubusercontent.com/BerkeleyGW/git-config/master/setup.sh | bash
+# curl -sL https://raw.githubusercontent.com/BerkeleyGW/git-config/master/setup.sh | sh
 
 [core]
 	pager = less -R
-
-[remote "upstream"]
-	url = git@github.com:BerkeleyGW/BerkeleyGW.git
-	fetch = +refs/heads/*:refs/remotes/upstream/*
 
 [branch "master"]
 	remote = origin

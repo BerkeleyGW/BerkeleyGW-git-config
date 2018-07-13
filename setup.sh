@@ -68,4 +68,34 @@ git config include.path bgw-config || {\
 }
 
 
+# Setup commit template message
+cat > .git/commit-template << EOF
+
+################################################################################
+# INSTRUCTIONS FOR WRITING YOUR COMMIT MESSAGE                                 #
+################################################################################
+#
+# FIRST LINE: think of this as a SUBJECT LINE of an email. Write a SHORT
+# SUMMARY, in < 50 characters, of your commit. Do not include a trailing period,
+# and write your summary using verbs in the imperative form. Examples:
+#   "Fix bug in eqp corrections"
+#   "Rewrite gmap"
+#   "Optimize sigma for cache usage"
+# These short commit messages appear in the "git lg" command, so it is
+# important that they are SHORT and MEANINGFUL.
+#
+# SECOND LINE: add an EMPTY LINE. You don't need to include this empty line
+# if you are not planning on writing a longer explanation below.
+#
+# THIRD LINE ON: add a long and descriptive explanation of what you did.
+# This is optional for very small commits (eg: fix spelling, sign, etc.)
+# but mandatory otherwise. Break each line after ~72 characters, and separate
+# paragraphs with empty lines.
+#
+# Source: https://chris.beams.io/posts/git-commit/
+#
+################################################################################
+EOF
+
+
 echo 'Configuration script successfully (re)installed.'

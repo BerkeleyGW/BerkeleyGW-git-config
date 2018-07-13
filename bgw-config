@@ -23,6 +23,9 @@
 [remote]
 	pushDefault = origin
 
+[commit]
+	template = .git/commit-template
+
 [alias]
 	# Core aliases
 	#

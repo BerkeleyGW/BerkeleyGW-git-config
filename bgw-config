@@ -50,14 +50,14 @@
 			echo '  git add <files you changed/added/removed>' &&\
 			echo '  git commit -m <brief message>' &&\
 			false; }; }"
-	# Rebase master to x/master, where "x" is a generic remote.
+	# Fetch x/master and rebase master to x/master, where "x" is a generic remote.
 	# Accepts an optional second parameter that gets
 	# passed to git rebase (eg: "-i" for interactive rebase)
 	safe-rebase-x = "!f() { git can-rebase || return 1; \
-	        [ x$2 = x ] || [ x$2 = x-i ] || { \
-			echo 'ERROR: unknown optional argument:' $2; \
-			return 1; \
-		}; \
+	        if [ x$2 != x  -a  x$2 != x-i ]; then\
+			echo 'ERROR: unknown optional argument:' $2;\
+			return 1;\
+		fi;\
 		git fetch $1 && git branch -f before-rebase && git rebase $2 $1/master &&\
 		echo \"Success: fetched $1/master and rebased master to $1/master.\" || {\
 		echo \"ERROR: rebase operation of $1/master probably failed.\" &&\
@@ -75,7 +75,6 @@
 	# git reset --soft $mergepoint &&\
 	# git commit --edit -m"$(git log --format=%B --reverse master..$mergepoint)"
 	# https://stackoverflow.com/a/5201642
-	# Also: option for rebase -i?
 	#
 	# Rebase origin onto master.
 	# Accepts an optional parameter that gets
@@ -99,7 +98,7 @@
 	# Auxiliary aliases
 	#
 	lg1 = log --graph --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold green)(%ar)%C(reset) %C(white)%s%C(reset) %C(bold white)— %an%C(reset)%C(bold yellow)%d%C(reset)' --abbrev-commit --date=relative
-	lg2 = log --graph --all --format=format:'%C(bold blue)%h%C(reset) - %C(bold cyan)%aD%C(reset) %C(bold green)(%ar)%C(reset)%C(bold yellow)%d%C(reset)%n''          %C(white)%s%C(reset) %C(bold white)— %an%C(reset)' --abbrev-commit
+	lg2 = log --graph --pretty
 	lg = !git lg1
 	rev2hash = !sh -c 'git rev-list --first-parent --reverse master | awk NR==$0'
 	get-rev = get-abs-rev

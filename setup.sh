@@ -22,30 +22,34 @@ git config alias.update-config "$update_config_url" || {\
 }
 
 
-# Find out if we are using HTTPS or SSH
-origin=`git config --get remote.origin.url`
-echo $origin | grep -q 'git@github.com:'; has_ssh=$?
-echo $origin | grep -q 'https://github.com/'; has_https=$?
-if [ $has_ssh -a $has_https -o !$has_ssh -a !$has_https ]; then
-	echo 'ERROR: could not determine if using HTTPS or SSH URL.'
-	exit 3
-fi
+# Determine if we need to configure upstream
+#git remote | grep -q '^upstream'; has_upstream=$?
+#if [ $has_upstream -ne 0 ]; then
+if ! git remote | grep -q '^upstream'; then
+	# Find out if we are using HTTPS or SSH
+	origin=`git config --get remote.origin.url`
+	echo $origin | grep -q 'git@github.com:'; has_ssh=$?
+	echo $origin | grep -q 'https://github.com/'; has_https=$?
+	if [ $has_ssh -eq $has_https ]; then
+		echo 'ERROR: could not determine if using HTTPS or SSH URL.'
+		exit 3
+	fi
 
-
-# Add upstream
-if $has_ssh; then
-	url='git@github.com:BerkeleyGW/BerkeleyGW.git'
-	url_kind=SSH
-else
-	url='https://github.com/BerkeleyGW/BerkeleyGW.git'
-	url_kind=HTTPS
+	# Add upstream
+	if [ $has_ssh -eq 0 ]; then
+		url='git@github.com:BerkeleyGW/BerkeleyGW.git'
+		url_kind=SSH
+	else
+		url='https://github.com/BerkeleyGW/BerkeleyGW.git'
+		url_kind=HTTPS
+	fi
+	git remote add upstream $url && \
+		echo "Configured upstream with $url_kind URL." || \
+	{
+		echo "ERROR: could not configure upstream with $url_kind URL."
+		exit 4
+	}
 fi
-git remote add upstream $url && \
-	echo "Configured upstream with $url_kind URL." || \
-{
-	echo "ERROR: could not configure upstream with $url_kind URL."
-	exit 4
-}
 
 
 # Download "bgw-config" script

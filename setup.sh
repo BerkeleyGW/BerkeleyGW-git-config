@@ -15,7 +15,7 @@ cd `git rev-parse --show-toplevel` || {\
 
 
 # Configure the "git update-config" alias
-update_config_url="'!curl -sL https://raw.githubusercontent.com/BerkeleyGW/BerkeleyGW-git-config/master/setup.sh | sh'"
+update_config_url='"!curl -sL https://raw.githubusercontent.com/BerkeleyGW/BerkeleyGW-git-config/master/setup.sh | sh"'
 git config alias.update-config "$update_config_url" || {\
 	echo 'ERROR: could not set "update-config" git alias.'
 	exit 2
@@ -77,7 +77,7 @@ cat > .git/commit-template << EOF
 #
 # FIRST LINE: think of this as a SUBJECT LINE of an email. Write a SHORT
 # SUMMARY, in < 50 characters, of your commit. Do not include a trailing period,
-# and write your summary using verbs in the imperative form. Examples:
+# and write your summary using verbs in the imperative form. Examples: 
 #   "Fix bug in eqp corrections"
 #   "Rewrite gmap"
 #   "Optimize sigma for cache usage"

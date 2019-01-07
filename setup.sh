@@ -15,7 +15,7 @@ cd `git rev-parse --show-toplevel` || {\
 
 
 # Configure the "git update-config" alias
-update_config_url='"!curl -sL https://raw.githubusercontent.com/BerkeleyGW/BerkeleyGW-git-config/master/setup.sh | sh"'
+update_config_url='!curl -sL https://raw.githubusercontent.com/BerkeleyGW/BerkeleyGW-git-config/master/setup.sh | sh'
 git config alias.update-config "$update_config_url" || {\
 	echo 'ERROR: could not set "update-config" git alias.'
 	exit 2
